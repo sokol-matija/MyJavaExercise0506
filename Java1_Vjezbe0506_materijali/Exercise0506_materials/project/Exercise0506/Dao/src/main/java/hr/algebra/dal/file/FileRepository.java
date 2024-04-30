@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -38,6 +39,7 @@ public class FileRepository implements Repository {
             maxID = max.getAsInt();
         }
 
+        student.setId(++maxID);
         Files.write(
                 STUDENT_PATH,
                 student.format().getBytes(),
@@ -62,7 +64,9 @@ public class FileRepository implements Repository {
 
     @Override
     public void deleteStudent(int id) throws Exception {
-
+        List<Student> students = selectStudents();
+        students.removeIf(s -> s.getId() == id);
+        writeStudents(students);
     }
 
     @Override
@@ -75,7 +79,13 @@ public class FileRepository implements Repository {
 
     @Override
     public List<Student> selectStudents() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        List<Student> students = new ArrayList<>();
+
+        List<String> lines = Files.readAllLines(STUDENT_PATH);
+
+        lines.forEach(line -> students.add(Student.parseStudent(line)));
+
+        return students;
     }
 
     private void writeStudents(List<Student> students) throws IOException {
